@@ -99,7 +99,7 @@ export default function App() {
           <Flash deck={deck} cat={cat} setCat={setCat} progress={progress} mark={mark} />
         )}
         {loaded && view === "quiz" && (
-          <Quiz deck={deck} cat={cat} setCat={setCat} markQuiz={markQuiz} />
+          <Quiz deck={deck} cat={cat} setCat={setCat} markQuiz={markQuiz} progress={progress} />
         )}
         {loaded && view === "browse" && (
           <Browse cat={cat} setCat={setCat} progress={progress} mark={mark} />

@@ -26,6 +26,8 @@ export default function Flash({ deck, cat, setCat, progress, mark }) {
   };
   const handleMark = (s) => { mark(card.e, s); next(); };
 
+  const cardCls = ["card", flipped ? "flipped" : "", status ? "card-" + status : ""].filter(Boolean).join(" ");
+
   return (
     <div className="study">
       <div className="study-top">
@@ -36,7 +38,7 @@ export default function Flash({ deck, cat, setCat, progress, mark }) {
         </div>
       </div>
 
-      <div className={flipped ? "card flipped" : "card"} onClick={() => setFlipped((f) => !f)}>
+      <div className={cardCls} onClick={() => setFlipped((f) => !f)}>
         <div className="card-inner">
           <div className="card-face card-front">
             <span className="card-tab" style={{ background: meta.color }}>{meta.label}</span>
@@ -47,7 +49,12 @@ export default function Flash({ deck, cat, setCat, progress, mark }) {
           <div className="card-face card-back">
             <span className="card-tab" style={{ background: meta.color }}>{meta.label}</span>
             <div className="meaning">{card.j}</div>
-            {card.x && <div className="example"><span className="ex-en">{card.x}</span></div>}
+            {card.x && (
+              <div className="example">
+                <span className="ex-en">{card.x}</span>
+                {card.xj && <span className="ex-ja">{card.xj}</span>}
+              </div>
+            )}
             <div className="word-small">{card.e}</div>
           </div>
         </div>

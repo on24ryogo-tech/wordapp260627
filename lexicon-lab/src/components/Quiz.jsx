@@ -3,8 +3,29 @@ import { CATS, DATA } from "../data/words";
 import CatPicker from "./CatPicker";
 import Empty from "./Empty";
 
-function makeQuestion(deck, pool) {
-  const q = deck[Math.floor(Math.random() * deck.length)];
+function weightedPick(deck, progress) {
+  const weights = deck.map(d => {
+    const p = progress[d.e];
+    if (!p || !p.status) return 2;
+    if (p.status === "learning") return 5;
+    const total = (p.correct || 0) + (p.incorrect || 0);
+    if (total === 0) return 2;
+    const acc = p.correct / total;
+    if (acc < 0.5) return 4;
+    if (p.status === "known" && acc >= 0.8) return 1;
+    return 2;
+  });
+  const sum = weights.reduce((a, b) => a + b, 0);
+  let r = Math.random() * sum;
+  for (let i = 0; i < weights.length; i++) {
+    r -= weights[i];
+    if (r <= 0) return deck[i];
+  }
+  return deck[deck.length - 1];
+}
+
+function makeQuestion(deck, pool, progress) {
+  const q = weightedPick(deck, progress);
   const askEnToJa = Math.random() < 0.5;
   const opts = new Set([askEnToJa ? q.j : q.e]);
   let guard = 0;
@@ -14,11 +35,14 @@ function makeQuestion(deck, pool) {
     guard++;
   }
   const arr = Array.from(opts);
-  for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; }
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
   return { q, askEnToJa, options: arr, answer: askEnToJa ? q.j : q.e };
 }
 
-export default function Quiz({ deck, cat, setCat, markQuiz }) {
+export default function Quiz({ deck, cat, setCat, markQuiz, progress }) {
   const pool = DATA;
   const [qst, setQst] = useState(null);
   const [picked, setPicked] = useState(null);
@@ -27,8 +51,8 @@ export default function Quiz({ deck, cat, setCat, markQuiz }) {
   const newQ = useCallback(() => {
     if (deck.length < 2) { setQst(null); return; }
     setPicked(null);
-    setQst(makeQuestion(deck, pool));
-  }, [deck, pool]);
+    setQst(makeQuestion(deck, pool, progress));
+  }, [deck, pool, progress]);
 
   useEffect(() => { setScore({ right: 0, total: 0 }); newQ(); }, [deck, newQ]);
 
@@ -77,6 +101,7 @@ export default function Quiz({ deck, cat, setCat, markQuiz }) {
         {picked && (
           <div className="quiz-foot">
             {qst.q.x && <p className="quiz-ex">{qst.q.x}</p>}
+            {qst.q.xj && <p className="quiz-xj">{qst.q.xj}</p>}
             <button className="cta cta-primary" onClick={newQ}>次の問題 →</button>
           </div>
         )}
