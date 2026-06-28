@@ -26,7 +26,7 @@ export default function Browse({ cat, setCat, progress, mark }) {
         {list.length === 0 && <p className="empty-line">該当する語がありません。</p>}
         {list.map((d) => {
           const meta = CATS[d.c];
-          const status = progress[d.e];
+          const status = progress[d.e]?.status;
           return (
             <div key={d.e} className="row">
               <span className="row-spine" style={{ background: meta.color }} />

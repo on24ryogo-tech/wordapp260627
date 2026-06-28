@@ -45,6 +45,9 @@ export default function Style() {
 .coord-knob{ position:absolute; top:50%; width:14px; height:14px; background:#fff; border:3px solid var(--cobalt); border-radius:50%; transform:translate(-50%,-50%); transition:left .5s ease; }
 .coord-labels{ display:flex; justify-content:space-between; margin-top:12px; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); }
 .coord-labels .mid{ color:var(--amber); }
+.quiz-stat{ margin-top:10px; font-size:13px; color:var(--muted); }
+.quiz-stat strong{ color:var(--cobalt); font-variant-numeric:tabular-nums; }
+.quiz-stat-sub{ margin-left:6px; font-size:11px; }
 
 .cta-row{ display:flex; gap:10px; flex-wrap:wrap; }
 .cta{ font-family:'Inter'; font-weight:600; font-size:14.5px; padding:11px 18px; border-radius:10px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer; }

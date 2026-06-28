@@ -15,7 +15,7 @@ export default function Flash({ deck, cat, setCat, progress, mark }) {
   const idx = order[pos] ?? 0;
   const card = deck[idx];
   const meta = CATS[card.c];
-  const status = progress[card.e];
+  const status = progress[card.e]?.status;
 
   const next = () => { setFlipped(false); setPos((p) => (p + 1) % deck.length); };
   const prev = () => { setFlipped(false); setPos((p) => (p - 1 + deck.length) % deck.length); };

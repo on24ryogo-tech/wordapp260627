@@ -18,7 +18,7 @@ function makeQuestion(deck, pool) {
   return { q, askEnToJa, options: arr, answer: askEnToJa ? q.j : q.e };
 }
 
-export default function Quiz({ deck, cat, setCat, mark }) {
+export default function Quiz({ deck, cat, setCat, markQuiz }) {
   const pool = DATA;
   const [qst, setQst] = useState(null);
   const [picked, setPicked] = useState(null);
@@ -40,7 +40,7 @@ export default function Quiz({ deck, cat, setCat, mark }) {
     setPicked(opt);
     const correct = opt === qst.answer;
     setScore((s) => ({ right: s.right + (correct ? 1 : 0), total: s.total + 1 }));
-    mark(qst.q.e, correct ? "known" : "learning");
+    markQuiz(qst.q.e, correct);
   };
 
   const meta = CATS[qst.q.c];

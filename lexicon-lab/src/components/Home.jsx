@@ -25,6 +25,12 @@ export default function Home({ stats, cat, setCat, go }) {
             <span className="mid">復習中 {stats.learning}</span>
             <span>未学習 {stats.unseen}</span>
           </div>
+          {stats.accuracy !== null && (
+            <div className="quiz-stat">
+              クイズ正答率 <strong>{stats.accuracy}%</strong>
+              <span className="quiz-stat-sub">（{stats.answered}問回答済み）</span>
+            </div>
+          )}
         </div>
 
         <div className="cta-row">
