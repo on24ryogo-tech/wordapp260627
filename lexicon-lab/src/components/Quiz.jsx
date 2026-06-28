@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { CATS, DATA } from "../data/words";
 import CatPicker from "./CatPicker";
 import Empty from "./Empty";
@@ -54,7 +54,10 @@ export default function Quiz({ deck, cat, setCat, markQuiz, progress }) {
     setQst(makeQuestion(deck, pool, progress));
   }, [deck, pool, progress]);
 
-  useEffect(() => { setScore({ right: 0, total: 0 }); newQ(); }, [deck, newQ]);
+  const newQRef = useRef(newQ);
+  newQRef.current = newQ;
+
+  useEffect(() => { setScore({ right: 0, total: 0 }); newQRef.current(); }, [deck]);
 
   if (deck.length < 4) return <Empty msg="クイズには各品詞で4語以上が必要です。「すべて」か別の品詞を選んでください。" cat={cat} setCat={setCat} />;
   if (!qst) return <Empty />;
