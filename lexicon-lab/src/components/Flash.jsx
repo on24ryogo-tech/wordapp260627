@@ -3,12 +3,49 @@ import { CATS } from "../data/words";
 import CatPicker from "./CatPicker";
 import Empty from "./Empty";
 
+function sortedOrder(deck, progress) {
+  const rank = s => s === "learning" ? 0 : !s ? 1 : 2;
+  return deck.map((_, i) => i).sort((a, b) =>
+    rank(progress[deck[a].e]?.status) - rank(progress[deck[b].e]?.status)
+  );
+}
+
+function speakCard(card) {
+  const synth = window.speechSynthesis;
+  if (!synth) return;
+  synth.cancel();
+  const queue = [{ text: card.e, lang: "en-US" }, { text: card.j, lang: "ja-JP" }];
+  if (card.x) queue.push({ text: card.x, lang: "en-US" });
+  if (card.xj) queue.push({ text: card.xj, lang: "ja-JP" });
+  queue.forEach(({ text, lang }) => {
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = lang;
+    utt.rate = 0.85;
+    synth.speak(utt);
+  });
+}
+
+function SpeakBtn({ card }) {
+  return (
+    <button
+      className="speak-btn"
+      onClick={e => { e.stopPropagation(); speakCard(card); }}
+      title="音声再生"
+    >🔊</button>
+  );
+}
+
 export default function Flash({ deck, cat, setCat, progress, mark }) {
-  const [order, setOrder] = useState(() => deck.map((_, i) => i));
+  const [order, setOrder] = useState(() => sortedOrder(deck, progress));
   const [pos, setPos] = useState(0);
   const [flipped, setFlipped] = useState(false);
 
-  useEffect(() => { setOrder(deck.map((_, i) => i)); setPos(0); setFlipped(false); }, [deck]);
+  useEffect(() => {
+    setOrder(sortedOrder(deck, progress));
+    setPos(0);
+    setFlipped(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deck]);
 
   if (deck.length === 0) return <Empty />;
 
@@ -45,6 +82,7 @@ export default function Flash({ deck, cat, setCat, progress, mark }) {
             {status && <span className={"badge " + status}>{status === "known" ? "習得" : "復習中"}</span>}
             <div className="word">{card.e}</div>
             <div className="tap-hint">タップで意味を表示</div>
+            <SpeakBtn card={card} />
           </div>
           <div className="card-face card-back">
             <span className="card-tab" style={{ background: meta.color }}>{meta.label}</span>
@@ -56,6 +94,7 @@ export default function Flash({ deck, cat, setCat, progress, mark }) {
               </div>
             )}
             <div className="word-small">{card.e}</div>
+            <SpeakBtn card={card} />
           </div>
         </div>
       </div>
