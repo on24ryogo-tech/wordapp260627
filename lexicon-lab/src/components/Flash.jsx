@@ -3,56 +3,70 @@ import { CATS } from "../data/words";
 import CatPicker from "./CatPicker";
 import Empty from "./Empty";
 
-// ── voice selection ──────────────────────────────────────────────
+// ── audio key (must match scripts/gen-audio.mjs) ────────────────
+function toKey(str) {
+  return str
+    .replace(/β/g, 'beta').replace(/α/g, 'alpha').replace(/γ/g, 'gamma')
+    .replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '')
+    .toLowerCase().slice(0, 80);
+}
+
+// ── playback: pre-generated MP3 → Web Speech API fallback ────────
 let voiceCache = null;
 if (typeof window !== "undefined" && window.speechSynthesis) {
   window.speechSynthesis.addEventListener("voiceschanged", () => { voiceCache = null; });
 }
-
 function getBestVoices() {
   if (voiceCache) return voiceCache;
   const all = window.speechSynthesis?.getVoices() || [];
   if (!all.length) return { en: null, ja: null };
-
-  const score = v => {
-    const n = v.name.toLowerCase();
-    if (n.includes("google")) return 0;
-    if (n.includes("premium") || n.includes("enhanced")) return 1;
-    if (v.localService) return 2;
-    return 3;
-  };
-  const best = lang =>
-    [...all.filter(v => v.lang.startsWith(lang))].sort((a, b) => score(a) - score(b))[0] || null;
-
+  const score = v => { const n = v.name.toLowerCase(); return n.includes("google") ? 0 : n.includes("premium") || n.includes("enhanced") ? 1 : v.localService ? 2 : 3; };
+  const best = lang => [...all.filter(v => v.lang.startsWith(lang))].sort((a, b) => score(a) - score(b))[0] || null;
   voiceCache = { en: best("en"), ja: best("ja") };
   return voiceCache;
 }
-
-function speakQueue(items, voices) {
+function ttsSpeak(items) {
   if (!items.length) return;
-  const synth = window.speechSynthesis;
   const [{ text, lang }, ...rest] = items;
+  const synth = window.speechSynthesis;
   const utt = new SpeechSynthesisUtterance(text);
   utt.lang = lang;
   utt.rate = 0.88;
-  const voice = lang.startsWith("ja") ? voices?.ja : voices?.en;
+  const v = getBestVoices();
+  const voice = lang.startsWith("ja") ? v?.ja : v?.en;
   if (voice) utt.voice = voice;
-  utt.onend = () => speakQueue(rest, voices);
+  utt.onend = () => ttsSpeak(rest);
   synth.speak(utt);
 }
 
-function speakCard(card) {
-  const synth = window.speechSynthesis;
-  if (!synth) return;
-  synth.cancel();
-  const voices = getBestVoices();
-  const items = [{ text: card.e, lang: "en-US" }, { text: card.j, lang: "ja-JP" }];
-  if (card.x) items.push({ text: card.x, lang: "en-US" });
-  if (card.xj) items.push({ text: card.xj, lang: "ja-JP" });
-  speakQueue(items, voices);
+function playAudioSequence(srcs, fallbackItems) {
+  if (!srcs.length) { ttsSpeak(fallbackItems); return; }
+  const [first, ...rest] = srcs;
+  const a = new Audio(first);
+  a.onended = () => playAudioSequence(rest, []);
+  a.onerror = () => { ttsSpeak(fallbackItems); }; // MP3 missing → TTS
+  a.play().catch(() => { ttsSpeak(fallbackItems); });
 }
 
-// ── card ordering ────────────────────────────────────────────────
+function speakCard(card) {
+  const k = toKey(card.e);
+  const base = process.env.PUBLIC_URL || '';
+  const srcs = [
+    `${base}/audio/${k}-word.mp3`,
+    `${base}/audio/${k}-ja.mp3`,
+  ];
+  if (card.x)  srcs.push(`${base}/audio/${k}-ex.mp3`);
+  if (card.xj) srcs.push(`${base}/audio/${k}-xj.mp3`);
+
+  const fallback = [{ text: card.e, lang: "en-US" }, { text: card.j, lang: "ja-JP" }];
+  if (card.x)  fallback.push({ text: card.x, lang: "en-US" });
+  if (card.xj) fallback.push({ text: card.xj, lang: "ja-JP" });
+
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  playAudioSequence(srcs, fallback);
+}
+
+// ── card ordering ─────────────────────────────────────────────────
 function sortedOrder(deck, progress) {
   const rank = s => s === "learning" ? 0 : !s ? 1 : 2;
   return deck.map((_, i) => i).sort((a, b) =>
@@ -62,11 +76,9 @@ function sortedOrder(deck, progress) {
 
 function SpeakBtn({ card }) {
   return (
-    <button
-      className="speak-btn"
-      onClick={e => { e.stopPropagation(); speakCard(card); }}
-      title="音声再生"
-    >🔊</button>
+    <button className="speak-btn" onClick={e => { e.stopPropagation(); speakCard(card); }} title="音声再生">
+      🔊
+    </button>
   );
 }
 
@@ -98,7 +110,6 @@ export default function Flash({ deck, cat, setCat, progress, mark }) {
     setOrder(a); setPos(0); setFlipped(false);
   };
   const handleMark = (s) => { mark(card.e, s); next(); };
-
   const cardCls = ["card", flipped ? "flipped" : "", status ? "card-" + status : ""].filter(Boolean).join(" ");
 
   return (
@@ -110,7 +121,6 @@ export default function Flash({ deck, cat, setCat, progress, mark }) {
           <button className="ghost" onClick={shuffle}>↻ シャッフル</button>
         </div>
       </div>
-
       <div className={cardCls} onClick={() => setFlipped((f) => !f)}>
         <div className="card-inner">
           <div className="card-face card-front">
@@ -134,7 +144,6 @@ export default function Flash({ deck, cat, setCat, progress, mark }) {
           </div>
         </div>
       </div>
-
       <div className="study-controls">
         <button className="ctrl" onClick={prev}>← 前へ</button>
         <button className="ctrl learn" onClick={() => handleMark("learning")}>要復習</button>
