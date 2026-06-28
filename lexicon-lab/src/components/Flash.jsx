@@ -3,26 +3,61 @@ import { CATS } from "../data/words";
 import CatPicker from "./CatPicker";
 import Empty from "./Empty";
 
-function sortedOrder(deck, progress) {
-  const rank = s => s === "learning" ? 0 : !s ? 1 : 2;
-  return deck.map((_, i) => i).sort((a, b) =>
-    rank(progress[deck[a].e]?.status) - rank(progress[deck[b].e]?.status)
-  );
+// ── voice selection ──────────────────────────────────────────────
+let voiceCache = null;
+if (typeof window !== "undefined" && window.speechSynthesis) {
+  window.speechSynthesis.addEventListener("voiceschanged", () => { voiceCache = null; });
+}
+
+function getBestVoices() {
+  if (voiceCache) return voiceCache;
+  const all = window.speechSynthesis?.getVoices() || [];
+  if (!all.length) return { en: null, ja: null };
+
+  const score = v => {
+    const n = v.name.toLowerCase();
+    if (n.includes("google")) return 0;
+    if (n.includes("premium") || n.includes("enhanced")) return 1;
+    if (v.localService) return 2;
+    return 3;
+  };
+  const best = lang =>
+    [...all.filter(v => v.lang.startsWith(lang))].sort((a, b) => score(a) - score(b))[0] || null;
+
+  voiceCache = { en: best("en"), ja: best("ja") };
+  return voiceCache;
+}
+
+function speakQueue(items, voices) {
+  if (!items.length) return;
+  const synth = window.speechSynthesis;
+  const [{ text, lang }, ...rest] = items;
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = lang;
+  utt.rate = 0.88;
+  const voice = lang.startsWith("ja") ? voices?.ja : voices?.en;
+  if (voice) utt.voice = voice;
+  utt.onend = () => speakQueue(rest, voices);
+  synth.speak(utt);
 }
 
 function speakCard(card) {
   const synth = window.speechSynthesis;
   if (!synth) return;
   synth.cancel();
-  const queue = [{ text: card.e, lang: "en-US" }, { text: card.j, lang: "ja-JP" }];
-  if (card.x) queue.push({ text: card.x, lang: "en-US" });
-  if (card.xj) queue.push({ text: card.xj, lang: "ja-JP" });
-  queue.forEach(({ text, lang }) => {
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.lang = lang;
-    utt.rate = 0.85;
-    synth.speak(utt);
-  });
+  const voices = getBestVoices();
+  const items = [{ text: card.e, lang: "en-US" }, { text: card.j, lang: "ja-JP" }];
+  if (card.x) items.push({ text: card.x, lang: "en-US" });
+  if (card.xj) items.push({ text: card.xj, lang: "ja-JP" });
+  speakQueue(items, voices);
+}
+
+// ── card ordering ────────────────────────────────────────────────
+function sortedOrder(deck, progress) {
+  const rank = s => s === "learning" ? 0 : !s ? 1 : 2;
+  return deck.map((_, i) => i).sort((a, b) =>
+    rank(progress[deck[a].e]?.status) - rank(progress[deck[b].e]?.status)
+  );
 }
 
 function SpeakBtn({ card }) {
@@ -35,6 +70,7 @@ function SpeakBtn({ card }) {
   );
 }
 
+// ── component ────────────────────────────────────────────────────
 export default function Flash({ deck, cat, setCat, progress, mark }) {
   const [order, setOrder] = useState(() => sortedOrder(deck, progress));
   const [pos, setPos] = useState(0);
