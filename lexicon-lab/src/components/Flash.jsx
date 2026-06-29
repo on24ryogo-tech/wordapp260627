@@ -11,7 +11,16 @@ function toKey(str) {
     .toLowerCase().slice(0, 80);
 }
 
-// ── playback: pre-generated MP3 → Web Speech API fallback ────────
+// ── playback engine ──────────────────────────────────────────────
+let currentAudioEl = null;
+let playId = 0;
+
+function stopAll() {
+  playId++;
+  if (currentAudioEl) { currentAudioEl.pause(); currentAudioEl = null; }
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
 let voiceCache = null;
 if (typeof window !== "undefined" && window.speechSynthesis) {
   window.speechSynthesis.addEventListener("voiceschanged", () => { voiceCache = null; });
@@ -25,45 +34,31 @@ function getBestVoices() {
   voiceCache = { en: best("en"), ja: best("ja") };
   return voiceCache;
 }
-function ttsSpeak(items) {
-  if (!items.length) return;
+
+function ttsSpeak(id, items, speed, onDone) {
+  if (id !== playId) return;
+  if (!items.length) { if (onDone) onDone(); return; }
   const [{ text, lang }, ...rest] = items;
   const synth = window.speechSynthesis;
   const utt = new SpeechSynthesisUtterance(text);
   utt.lang = lang;
-  utt.rate = 0.88;
+  utt.rate = 0.88 * speed;
   const v = getBestVoices();
-  const voice = lang.startsWith("ja") ? v?.ja : v?.en;
-  if (voice) utt.voice = voice;
-  utt.onend = () => ttsSpeak(rest);
+  if (lang.startsWith("ja") ? v?.ja : v?.en) utt.voice = lang.startsWith("ja") ? v.ja : v.en;
+  utt.onend = () => ttsSpeak(id, rest, speed, onDone);
   synth.speak(utt);
 }
 
-function playAudioSequence(srcs, fallbackItems) {
-  if (!srcs.length) { ttsSpeak(fallbackItems); return; }
+function playAudioSequence(id, srcs, fallbackItems, speed, onDone) {
+  if (id !== playId) return;
+  if (!srcs.length) { ttsSpeak(id, fallbackItems, speed, onDone); return; }
   const [first, ...rest] = srcs;
   const a = new Audio(first);
-  a.onended = () => playAudioSequence(rest, []);
-  a.onerror = () => { ttsSpeak(fallbackItems); }; // MP3 missing → TTS
-  a.play().catch(() => { ttsSpeak(fallbackItems); });
-}
-
-function speakCard(card) {
-  const k = toKey(card.e);
-  const base = process.env.PUBLIC_URL || '';
-  const srcs = [
-    `${base}/audio/${k}-word.mp3`,
-    `${base}/audio/${k}-ja.mp3`,
-  ];
-  if (card.x)  srcs.push(`${base}/audio/${k}-ex.mp3`);
-  if (card.xj) srcs.push(`${base}/audio/${k}-xj.mp3`);
-
-  const fallback = [{ text: card.e, lang: "en-US" }, { text: card.j, lang: "ja-JP" }];
-  if (card.x)  fallback.push({ text: card.x, lang: "en-US" });
-  if (card.xj) fallback.push({ text: card.xj, lang: "ja-JP" });
-
-  if (window.speechSynthesis) window.speechSynthesis.cancel();
-  playAudioSequence(srcs, fallback);
+  a.playbackRate = speed;
+  currentAudioEl = a;
+  a.onended = () => playAudioSequence(id, rest, [], speed, onDone);
+  a.onerror = () => { if (id === playId) ttsSpeak(id, fallbackItems, speed, onDone); };
+  a.play().catch(() => { if (id === playId) ttsSpeak(id, fallbackItems, speed, onDone); });
 }
 
 // ── card ordering ─────────────────────────────────────────────────
@@ -74,21 +69,17 @@ function sortedOrder(deck, progress) {
   );
 }
 
-function SpeakBtn({ card }) {
-  return (
-    <button className="speak-btn" onClick={e => { e.stopPropagation(); speakCard(card); }} title="音声再生">
-      🔊
-    </button>
-  );
-}
-
 // ── component ────────────────────────────────────────────────────
 export default function Flash({ deck, cat, setCat, progress, mark }) {
   const [order, setOrder] = useState(() => sortedOrder(deck, progress));
   const [pos, setPos] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState(1.0);
 
   useEffect(() => {
+    stopAll();
+    setPlaying(false);
     setOrder(sortedOrder(deck, progress));
     setPos(0);
     setFlipped(false);
@@ -102,15 +93,35 @@ export default function Flash({ deck, cat, setCat, progress, mark }) {
   const meta = CATS[card.c];
   const status = progress[card.e]?.status;
 
-  const next = () => { setFlipped(false); setPos((p) => (p + 1) % deck.length); };
-  const prev = () => { setFlipped(false); setPos((p) => (p - 1 + deck.length) % deck.length); };
+  function stopAudio() { stopAll(); setPlaying(false); }
+
+  function handleSpeak(c) {
+    if (playing) { stopAudio(); return; }
+    const k = toKey(c.e);
+    const base = process.env.PUBLIC_URL || '';
+    const srcs = [`${base}/audio/${k}-word.mp3`, `${base}/audio/${k}-ja.mp3`];
+    if (c.x)  srcs.push(`${base}/audio/${k}-ex.mp3`);
+    if (c.xj) srcs.push(`${base}/audio/${k}-xj.mp3`);
+    const fallback = [{ text: c.e, lang: "en-US" }, { text: c.j, lang: "ja-JP" }];
+    if (c.x)  fallback.push({ text: c.x, lang: "en-US" });
+    if (c.xj) fallback.push({ text: c.xj, lang: "ja-JP" });
+    setPlaying(true);
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    const id = ++playId;
+    playAudioSequence(id, srcs, fallback, speed, () => setPlaying(false));
+  }
+
+  const next = () => { stopAudio(); setFlipped(false); setPos((p) => (p + 1) % deck.length); };
+  const prev = () => { stopAudio(); setFlipped(false); setPos((p) => (p - 1 + deck.length) % deck.length); };
   const shuffle = () => {
+    stopAudio();
     const a = deck.map((_, i) => i);
     for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
     setOrder(a); setPos(0); setFlipped(false);
   };
   const handleMark = (s) => { mark(card.e, s); next(); };
   const cardCls = ["card", flipped ? "flipped" : "", status ? "card-" + status : ""].filter(Boolean).join(" ");
+  const speakCls = "speak-btn" + (playing ? " active" : "");
 
   return (
     <div className="study">
@@ -128,7 +139,9 @@ export default function Flash({ deck, cat, setCat, progress, mark }) {
             {status && <span className={"badge " + status}>{status === "known" ? "習得" : "復習中"}</span>}
             <div className="word">{card.e}</div>
             <div className="tap-hint">タップで意味を表示</div>
-            <SpeakBtn card={card} />
+            <button className={speakCls} onClick={e => { e.stopPropagation(); handleSpeak(card); }} title={playing ? "停止" : "音声再生"}>
+              {playing ? "⏹" : "🔊"}
+            </button>
           </div>
           <div className="card-face card-back">
             <span className="card-tab" style={{ background: meta.color }}>{meta.label}</span>
@@ -140,9 +153,18 @@ export default function Flash({ deck, cat, setCat, progress, mark }) {
               </div>
             )}
             <div className="word-small">{card.e}</div>
-            <SpeakBtn card={card} />
+            <button className={speakCls} onClick={e => { e.stopPropagation(); handleSpeak(card); }} title={playing ? "停止" : "音声再生"}>
+              {playing ? "⏹" : "🔊"}
+            </button>
           </div>
         </div>
+      </div>
+      <div className="speed-ctrl">
+        {[0.75, 1, 1.5, 2].map(s => (
+          <button key={s} className={"spd-btn" + (speed === s ? " spd-on" : "")} onClick={() => setSpeed(s)}>
+            {s}×
+          </button>
+        ))}
       </div>
       <div className="study-controls">
         <button className="ctrl" onClick={prev}>← 前へ</button>
