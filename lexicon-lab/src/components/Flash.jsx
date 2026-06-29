@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { CATS } from "../data/words";
+import { IMAGES } from "../data/images";
 import CatPicker from "./CatPicker";
 import Empty from "./Empty";
 
@@ -73,7 +74,32 @@ function srpSort(cards, progress) {
     if (p.nextReview && p.nextReview <= today) return 0;
     return 2;
   };
-  return [...cards].sort((a, b) => rank(progress[a.e]) - rank(progress[b.e]));
+  return [...cards].sort((a, b) => {
+    const ra = rank(progress[a.e]);
+    const rb = rank(progress[b.e]);
+    if (ra !== rb) return ra - rb;
+    // rank=2（習得済・期限外）内: nextReview降順 → 最近やったもの（短い間隔）を末尾へ
+    if (ra === 2) {
+      const na = progress[a.e]?.nextReview || '';
+      const nb = progress[b.e]?.nextReview || '';
+      if (na > nb) return -1;
+      if (na < nb) return 1;
+    }
+    return 0;
+  });
+}
+
+// ── card image with fallback ──────────────────────────────────────
+function CardImage({ word }) {
+  const [failed, setFailed] = useState(false);
+  const img = IMAGES[word];
+  if (!img || failed) return null;
+  return (
+    <div className="card-img-wrap">
+      <img src={img.url} alt={img.alt} className="card-img" onError={() => setFailed(true)} />
+      <div className="card-img-credit">{img.alt}　<span>{img.credit}</span></div>
+    </div>
+  );
 }
 
 // ── status tabs config ────────────────────────────────────────────
@@ -205,6 +231,7 @@ export default function Flash({ deck, cat, setCat, progress, mark }) {
           <div className="card-face card-back">
             <span className="card-tab" style={{ background: meta.color }}>{meta.label}</span>
             <div className="meaning">{card.j}</div>
+            <CardImage word={card.e} />
             {card.x && (
               <div className="example">
                 <span className="ex-en">{card.x}</span>

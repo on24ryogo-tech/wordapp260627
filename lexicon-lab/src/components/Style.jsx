@@ -78,7 +78,7 @@ export default function Style() {
 .ghost:hover{ border-color:var(--cobalt); color:var(--cobalt); }
 
 .card{ perspective:1400px; cursor:pointer; margin:6px 0 22px; }
-.card-inner{ position:relative; width:100%; min-height:280px; transform-style:preserve-3d; transition:transform .5s cubic-bezier(.2,.7,.2,1); }
+.card-inner{ position:relative; width:100%; min-height:340px; transform-style:preserve-3d; transition:transform .5s cubic-bezier(.2,.7,.2,1); }
 .card.flipped .card-inner{ transform:rotateY(180deg); }
 .card-face{ position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:0 10px 30px rgba(21,33,43,.07); padding:30px 28px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
 .card-back{ transform:rotateY(180deg); }
@@ -126,6 +126,11 @@ export default function Style() {
 .quiz-foot{ margin-top:18px; text-align:center; }
 .quiz-ex{ font-style:italic; color:var(--muted); font-size:14px; margin-bottom:4px; }
 .quiz-xj{ color:var(--cobalt); font-size:13px; margin-bottom:14px; }
+
+.card-img-wrap{ margin:10px 0 6px; display:flex; flex-direction:column; align-items:center; gap:4px; max-width:100%; }
+.card-img{ max-width:min(280px,90%); max-height:130px; object-fit:contain; border-radius:6px; border:1px solid var(--line); background:#fff; padding:4px; }
+.card-img-credit{ font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--muted); text-align:center; line-height:1.4; max-width:90%; }
+.card-img-credit span{ opacity:.7; }
 
 .ex-en{ font-style:italic; color:var(--ink); font-size:14px; display:block; }
 .ex-ja{ color:var(--cobalt); font-size:13px; display:block; margin-top:5px; }
