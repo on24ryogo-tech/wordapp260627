@@ -89,42 +89,44 @@ function srpSort(cards, progress) {
   });
 }
 
-// ── Wikipedia API サムネイル取得 (CORS対応・キャッシュ付き) ──────
+// ── Wikipedia pageimages API (CORS対応・キャッシュ付き) ──────────
+// action API は summary より多くのページで画像を返す
 const _wikiCache = {};
 
 function CardImage({ word }) {
   const article = WIKI_ARTICLES[word];
-  const cached  = article ? _wikiCache[article] : null;
-  const [src,    setSrc]    = useState(cached && cached !== 'x' ? cached.src    : null);
-  const [credit, setCredit] = useState(cached && cached !== 'x' ? cached.credit : null);
-  const [failed, setFailed] = useState(cached === 'x');
+  const [st, setSt] = useState({ s: 'idle' }); // s: 'idle'|'ok'|'fail'
 
   useEffect(() => {
-    if (!article || src || failed) return;
-    if (_wikiCache[article] === 'x') { setFailed(true); return; }
-    if (_wikiCache[article])         { const c = _wikiCache[article]; setSrc(c.src); setCredit(c.credit); return; }
+    if (!article) return;
+    const hit = _wikiCache[article];
+    if (hit === 'x') { setSt({ s: 'fail' }); return; }
+    if (hit)         { setSt({ s: 'ok', src: hit.src, credit: hit.credit }); return; }
+    setSt({ s: 'idle' }); // リセット（カード切替時に前の画像を消す）
 
     let alive = true;
-    fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(article)}`)
+    const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(article)}&prop=pageimages&format=json&pithumbsize=320&origin=*`;
+    fetch(url)
       .then(r => r.json())
       .then(d => {
         if (!alive) return;
-        if (d.thumbnail?.source) {
-          const c = { src: d.thumbnail.source, credit: d.title };
+        const page = Object.values(d.query?.pages || {})[0];
+        if (page?.thumbnail?.source) {
+          const c = { src: page.thumbnail.source, credit: page.title };
           _wikiCache[article] = c;
-          setSrc(c.src); setCredit(c.credit);
-        } else { _wikiCache[article] = 'x'; setFailed(true); }
+          setSt({ s: 'ok', ...c });
+        } else { _wikiCache[article] = 'x'; setSt({ s: 'fail' }); }
       })
-      .catch(() => { if (alive) { _wikiCache[article] = 'x'; setFailed(true); } });
+      .catch(() => { if (alive) { _wikiCache[article] = 'x'; setSt({ s: 'fail' }); } });
     return () => { alive = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [article]);
 
-  if (!article || failed || !src) return null;
+  if (!article || st.s !== 'ok') return null;
   return (
     <div className="card-img-wrap">
-      <img src={src} alt={article} className="card-img" onError={() => setFailed(true)} />
-      <div className="card-img-credit">Wikipedia: <em>{credit}</em> / CC BY-SA</div>
+      <img src={st.src} alt={article} className="card-img"
+        onError={() => setSt({ s: 'fail' })} />
+      <div className="card-img-credit">Wikipedia: <em>{st.credit}</em> / CC BY-SA</div>
     </div>
   );
 }
