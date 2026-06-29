@@ -61,11 +61,22 @@ function playAudioSequence(id, srcs, fallbackItems, speed, onDone) {
   a.play().catch(() => { if (id === playId) ttsSpeak(id, fallbackItems, speed, onDone); });
 }
 
-// ── card ordering ─────────────────────────────────────────────────
+// ── card ordering (SRP-aware) ─────────────────────────────────────
+function localDateStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 function sortedOrder(deck, progress) {
-  const rank = s => s === "learning" ? 0 : !s ? 1 : 2;
+  const today = localDateStr();
+  const rank = (p) => {
+    if (!p?.status) return 1;                           // unseen
+    if (p.status === "learning") return 0;              // always review
+    if (p.nextReview && p.nextReview <= today) return 0; // due today
+    return 2;                                           // known, not due
+  };
   return deck.map((_, i) => i).sort((a, b) =>
-    rank(progress[deck[a].e]?.status) - rank(progress[deck[b].e]?.status)
+    rank(progress[deck[a].e]) - rank(progress[deck[b].e])
   );
 }
 

@@ -176,6 +176,34 @@ export default function Style() {
 .modal-actions{ display:flex; gap:10px; }
 .modal-actions .tagbtn{ flex:1; text-align:center; padding:12px; font-size:14px; }
 
+/* ── due-today banner ─────────────────────────────────────────── */
+.due-banner{ display:flex; align-items:center; gap:10px; background:rgba(180,83,9,.09); border:1px solid rgba(180,83,9,.28); border-radius:10px; padding:12px 16px; margin-bottom:20px; cursor:pointer; color:var(--amber); font-size:14px; font-weight:500; }
+.due-banner:hover{ background:rgba(180,83,9,.15); }
+.due-banner strong{ font-weight:700; }
+.due-icon{ font-size:18px; flex:none; }
+.due-arrow{ margin-left:auto; font-weight:700; font-size:13px; white-space:nowrap; }
+
+/* ── study calendar ───────────────────────────────────────────── */
+.cal-section{ margin:30px 0 4px; }
+.cal-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.cal-title{ font-family:'Fraunces',serif; font-weight:600; font-size:18px; }
+.cal-chips{ display:flex; gap:7px; }
+.cal-chip{ font-family:'JetBrains Mono',monospace; font-size:11.5px; background:var(--surface); border:1px solid var(--line); border-radius:99px; padding:4px 10px; color:var(--muted); }
+.cal-scroll{ overflow-x:auto; padding-bottom:4px; }
+.cal-month-row{ display:flex; gap:3px; margin-bottom:4px; }
+.cal-month-cell{ width:12px; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--muted); white-space:nowrap; overflow:visible; }
+.cal-grid{ display:flex; gap:3px; }
+.cal-col{ display:flex; flex-direction:column; gap:3px; }
+.cal-cell{ width:12px; height:12px; border-radius:2px; flex:none; }
+.cal-cell.l0{ background:var(--line); }
+.cal-cell.l1{ background:#c7d8ff; }
+.cal-cell.l2{ background:#7fa8f5; }
+.cal-cell.l3{ background:#4F79EE; }
+.cal-cell.l4{ background:var(--cobalt); }
+.cal-cell.cal-today{ outline:2px solid var(--cobalt); outline-offset:1px; }
+.cal-legend{ display:flex; align-items:center; gap:3px; margin-top:8px; }
+.cal-leg-label{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); margin:0 3px; }
+
 @media (max-width:560px){
   .study-controls{ grid-template-columns:repeat(2,1fr); }
 }

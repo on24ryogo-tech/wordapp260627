@@ -1,8 +1,9 @@
 import React from "react";
 import { CATS, DATA } from "../data/words";
 import CatPicker from "./CatPicker";
+import Calendar from "./Calendar";
 
-export default function Home({ stats, cat, setCat, go }) {
+export default function Home({ stats, cat, setCat, go, studyLog }) {
   const pct = Math.round((stats.known / stats.total) * 100);
   return (
     <div className="home">
@@ -33,12 +34,22 @@ export default function Home({ stats, cat, setCat, go }) {
           )}
         </div>
 
+        {stats.due > 0 && (
+          <div className="due-banner" onClick={() => go("flash")}>
+            <span className="due-icon">⏰</span>
+            <span>復習の時期です — <strong>{stats.due}語</strong>が期限切れ</span>
+            <span className="due-arrow">カードへ →</span>
+          </div>
+        )}
+
         <div className="cta-row">
           <button className="cta cta-primary" onClick={() => go("flash")}>カードで学ぶ →</button>
           <button className="cta" onClick={() => go("quiz")}>クイズに挑戦</button>
           <button className="cta" onClick={() => go("browse")}>一覧で確認</button>
         </div>
       </section>
+
+      <Calendar studyLog={studyLog} />
 
       <section className="picker-block">
         <h2 className="h2">品詞で絞り込む</h2>
