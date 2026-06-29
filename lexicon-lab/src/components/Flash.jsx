@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { CATS } from "../data/words";
-import { IMAGES } from "../data/images";
+import { WIKI_ARTICLES } from "../data/images";
 import CatPicker from "./CatPicker";
 import Empty from "./Empty";
 
@@ -89,15 +89,42 @@ function srpSort(cards, progress) {
   });
 }
 
-// ── card image with fallback ──────────────────────────────────────
+// ── Wikipedia API サムネイル取得 (CORS対応・キャッシュ付き) ──────
+const _wikiCache = {};
+
 function CardImage({ word }) {
-  const [failed, setFailed] = useState(false);
-  const img = IMAGES[word];
-  if (!img || failed) return null;
+  const article = WIKI_ARTICLES[word];
+  const cached  = article ? _wikiCache[article] : null;
+  const [src,    setSrc]    = useState(cached && cached !== 'x' ? cached.src    : null);
+  const [credit, setCredit] = useState(cached && cached !== 'x' ? cached.credit : null);
+  const [failed, setFailed] = useState(cached === 'x');
+
+  useEffect(() => {
+    if (!article || src || failed) return;
+    if (_wikiCache[article] === 'x') { setFailed(true); return; }
+    if (_wikiCache[article])         { const c = _wikiCache[article]; setSrc(c.src); setCredit(c.credit); return; }
+
+    let alive = true;
+    fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(article)}`)
+      .then(r => r.json())
+      .then(d => {
+        if (!alive) return;
+        if (d.thumbnail?.source) {
+          const c = { src: d.thumbnail.source, credit: d.title };
+          _wikiCache[article] = c;
+          setSrc(c.src); setCredit(c.credit);
+        } else { _wikiCache[article] = 'x'; setFailed(true); }
+      })
+      .catch(() => { if (alive) { _wikiCache[article] = 'x'; setFailed(true); } });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [article]);
+
+  if (!article || failed || !src) return null;
   return (
     <div className="card-img-wrap">
-      <img src={img.url} alt={img.alt} className="card-img" onError={() => setFailed(true)} />
-      <div className="card-img-credit">{img.alt}　<span>{img.credit}</span></div>
+      <img src={src} alt={article} className="card-img" onError={() => setFailed(true)} />
+      <div className="card-img-credit">Wikipedia: <em>{credit}</em> / CC BY-SA</div>
     </div>
   );
 }
