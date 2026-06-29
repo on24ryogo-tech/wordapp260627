@@ -101,6 +101,11 @@ export default function Style() {
 .spd-btn:hover{ border-color:var(--cobalt); color:var(--cobalt); }
 .spd-on{ background:var(--cobalt); color:#fff !important; border-color:var(--cobalt); }
 
+.flash-tab-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; flex-wrap:wrap; }
+.flash-tabs{ display:flex; gap:5px; flex-wrap:wrap; }
+.flash-meta{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.icon-btn{ padding:6px 10px; }
+
 .study-controls{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
 .ctrl{ font-family:'Inter'; font-weight:600; font-size:13.5px; padding:12px 6px; border-radius:10px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer; }
 .ctrl:hover{ border-color:var(--cobalt); }
