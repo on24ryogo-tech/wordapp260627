@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { CATS } from "../data/words";
-import { WIKI_ARTICLES } from "../data/images";
+import { WIKI_ARTICLES, LOCAL_FIGURES } from "../data/images";
 import CatPicker from "./CatPicker";
 import Empty from "./Empty";
 
@@ -89,21 +89,21 @@ function srpSort(cards, progress) {
   });
 }
 
-// ── Wikipedia pageimages API (CORS対応・キャッシュ付き) ──────────
-// action API は summary より多くのページで画像を返す
+// ── Card image: local paper figures first, then Wikipedia ────────
 const _wikiCache = {};
+const PUB = process.env.PUBLIC_URL || '';
 
 function CardImage({ word }) {
-  const article = WIKI_ARTICLES[word];
-  const [st, setSt] = useState({ s: 'idle' }); // s: 'idle'|'ok'|'fail'
+  const local   = LOCAL_FIGURES[word];
+  const article = local ? null : WIKI_ARTICLES[word];
+  const [st, setSt] = useState({ s: 'idle' });
 
   useEffect(() => {
-    if (!article) return;
+    if (local || !article) { setSt({ s: 'idle' }); return; }
     const hit = _wikiCache[article];
     if (hit === 'x') { setSt({ s: 'fail' }); return; }
     if (hit)         { setSt({ s: 'ok', src: hit.src, credit: hit.credit }); return; }
-    setSt({ s: 'idle' }); // リセット（カード切替時に前の画像を消す）
-
+    setSt({ s: 'idle' });
     let alive = true;
     const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(article)}&prop=pageimages&format=json&pithumbsize=320&origin=*`;
     fetch(url)
@@ -119,8 +119,16 @@ function CardImage({ word }) {
       })
       .catch(() => { if (alive) { _wikiCache[article] = 'x'; setSt({ s: 'fail' }); } });
     return () => { alive = false; };
-  }, [article]);
+  }, [local, article]);
 
+  if (local) {
+    return (
+      <div className="card-img-wrap">
+        <img src={PUB + local.src} alt={word} className="card-img" />
+        <div className="card-img-credit">{local.credit}</div>
+      </div>
+    );
+  }
   if (!article || st.s !== 'ok') return null;
   return (
     <div className="card-img-wrap">

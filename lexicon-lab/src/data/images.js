@@ -1,12 +1,25 @@
-// Wikipedia記事タイトル → カード画像に使う
-// Wikipedia REST API /api/rest_v1/page/summary/{title} からサムネ取得（CORS対応済み）
+// ── 論文からの局所画像 (優先) ────────────────────────────────────
+// Roh, Williams & Cornella, Nature 654, 92–99 (2026) / CC BY 4.0
+const PC = "Roh, Williams & Cornella, Nature 654, 92 (2026) / CC BY 4.0";
+export const LOCAL_FIGURES = {
+  "nucleophile":           { src: "/figures/fig_nucleophile_electrophile.png", credit: PC },
+  "electrophile":          { src: "/figures/fig_nucleophile_electrophile.png", credit: PC },
+  "cross-coupling":        { src: "/figures/fig_cross_coupling.png",           credit: PC },
+  "catalytic cycle":       { src: "/figures/fig_catalytic_cycle.png",          credit: PC },
+  "oxidative addition":    { src: "/figures/fig_oxidative_addition.png",       credit: PC },
+  "transmetalation":       { src: "/figures/fig_oxidative_addition.png",       credit: PC },
+  "reductive elimination": { src: "/figures/fig_catalytic_cycle.png",          credit: PC },
+  "intermediate":          { src: "/figures/fig_mechanism.png",                credit: PC },
+  "scaffold":              { src: "/figures/fig_scope.png",                    credit: PC },
+};
+
+// ── Wikipedia フォールバック ──────────────────────────────────────
+// action API (?prop=pageimages) で取得。LOCAL_FIGURESにある単語は使われない
 export const WIKI_ARTICLES = {
   // ── エネルギー図 ─────────────────────────────────────────────
   "transition state":       "Transition state",
   "activation barrier":     "Activation energy",
   "rate-determining step":  "Rate-determining step",
-  "intermediate":           "Reaction intermediate",
-  "free energy":            "Gibbs free energy",
   "enthalpy":               "Enthalpy",
   "entropy":                "Entropy",
   "Eyring analysis":        "Eyring equation",
@@ -14,8 +27,6 @@ export const WIKI_ARTICLES = {
   "rate constant":          "Reaction rate constant",
 
   // ── 有機反応機構 ──────────────────────────────────────────────
-  "nucleophile":            "Nucleophile",
-  "electrophile":           "Electrophile",
   "homolysis":              "Homolysis (chemistry)",
   "abstraction":            "Radical (chemistry)",
   "hydrogen atom transfer": "Hydrogen atom transfer",
@@ -25,11 +36,6 @@ export const WIKI_ARTICLES = {
   "migratory insertion":    "Migratory insertion",
 
   // ── 有機金属・触媒 ────────────────────────────────────────────
-  "oxidative addition":     "Oxidative addition",
-  "reductive elimination":  "Reductive elimination",
-  "transmetalation":        "Transmetalation",
-  "catalytic cycle":        "Catalysis",
-  "cross-coupling":         "Cross-coupling reaction",
   "coordination":           "Coordination complex",
   "ligand":                 "Ligand",
   "turnover":               "Turnover number",
@@ -48,7 +54,6 @@ export const WIKI_ARTICLES = {
   "radical clock":          "Radical clock",
 
   // ── その他の名詞 ──────────────────────────────────────────────
-  "scaffold":               "Molecular scaffold",
   "substituent":            "Substituent",
   "moiety":                 "Functional group",
   "building block":         "Building block (chemistry)",
