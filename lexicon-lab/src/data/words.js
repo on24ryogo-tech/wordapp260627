@@ -501,6 +501,66 @@ const RAW_DATA = [
   { e: "let me elaborate on...", j: "〜について詳しく説明します", c: "expr" },
   { e: "moving on to...", j: "次に〜に移ります", c: "expr" },
   { e: "I'll skip the details", j: "詳細は割愛します", c: "expr" },
+
+  // ── 追加語彙 v2 (2026-07) ──────────────────────
+  // 動詞
+  { e: "ascribe", j: "（原因を）〜に帰する", x: "The rate enhancement was ascribed to ligand acceleration.", xj: "反応速度の向上は配位子加速効果に帰せられた。", c: "verb" },
+  { e: "attribute", j: "（結果を）〜のせいだと考える", x: "We attribute the low yield to catalyst decomposition.", xj: "低収率は触媒の分解によるものと考えられる。", c: "verb" },
+  { e: "culminate in", j: "最終的に〜に至る", x: "These efforts culminated in a gram-scale synthesis.", xj: "これらの取り組みは最終的にグラムスケール合成に至った。", c: "phr" },
+  { e: "stem from", j: "〜に由来する", x: "The selectivity stems from steric repulsion in the transition state.", xj: "この選択性は遷移状態における立体反発に由来する。", c: "phr" },
+  { e: "obviate", j: "（必要性を）取り除く・不要にする", x: "This protocol obviates the need for protecting groups.", xj: "この手法により保護基の必要がなくなる。", c: "verb" },
+  { e: "interrogate", j: "（系を）詳しく調べる", x: "We interrogated the mechanism using kinetic isotope effects.", xj: "速度論的同位体効果を用いて機構を詳しく調べた。", c: "verb" },
+  { e: "recapitulate", j: "再現する・要約する", x: "The model system recapitulates the key features of the enzyme.", xj: "このモデル系は酵素の主要な特徴を再現している。", c: "verb" },
+  { e: "hamper", j: "妨げる", x: "Progress has been hampered by the instability of the intermediate.", xj: "中間体の不安定性により進展が妨げられてきた。", c: "verb" },
+  { e: "impede", j: "妨害する・遅らせる", x: "Steric bulk impedes the approach of the nucleophile.", xj: "立体的なかさ高さが求核剤の接近を妨げる。", c: "verb" },
+  { e: "forgo", j: "（利用を）差し控える・なしで済ます", x: "We chose to forgo chromatographic purification.", xj: "クロマトグラフィー精製を行わないことを選択した。", c: "verb" },
+  { e: "dissect", j: "詳細に分析する・切り分ける", x: "DFT calculations allowed us to dissect the competing pathways.", xj: "DFT計算により競合経路を詳細に切り分けることができた。", c: "verb" },
+  { e: "probe", j: "探る・調査する", x: "Hammett studies were conducted to probe the electronic effects.", xj: "電子効果を探るためハメット解析を行った。", c: "verb" },
+  { e: "benchmark", j: "基準と比較する・性能評価する", x: "The catalyst was benchmarked against the state of the art.", xj: "この触媒は最先端のものと性能比較された。", c: "verb" },
+  { e: "calibrate", j: "校正する・較正する", x: "The instrument was calibrated with authentic samples.", xj: "装置は標品を用いて校正した。", c: "verb" },
+  { e: "extrapolate", j: "外挿する・推定を広げる", x: "These trends cannot be extrapolated to bulkier substrates.", xj: "これらの傾向はよりかさ高い基質には外挿できない。", c: "verb" },
+  { e: "interpolate", j: "内挿する", x: "Rate constants at intermediate temperatures were interpolated.", xj: "中間温度での速度定数は内挿により求めた。", c: "verb" },
+  { e: "converge", j: "収束する・一致する", x: "Multiple lines of evidence converge on a radical mechanism.", xj: "複数の証拠がラジカル機構を支持する方向で一致する。", c: "verb" },
+  { e: "diverge", j: "分岐する・異なる", x: "The two pathways diverge at the metallacycle intermediate.", xj: "二つの経路はメタラサイクル中間体で分岐する。", c: "verb" },
+  { e: "plateau", j: "頭打ちになる；停滞期", x: "The yield plateaued at 80% after 12 hours.", xj: "収率は12時間後に80%で頭打ちになった。", c: "verb" },
+
+  // 名詞
+  { e: "onset", j: "開始・発現", x: "The onset of decomposition was observed above 150 °C.", xj: "150 °C以上で分解の開始が観測された。", c: "noun" },
+  { e: "trajectory", j: "軌道・軌跡・経過", x: "The attack trajectory follows the Bürgi–Dunitz angle.", xj: "攻撃の軌道はBürgi–Dunitz角に従う。", c: "noun" },
+  { e: "paradigm", j: "枠組み・規範", x: "This finding challenges the prevailing paradigm of cross-coupling.", xj: "この発見はクロスカップリングの支配的な枠組みに異議を唱える。", c: "noun" },
+  { e: "feasibility", j: "実現可能性", x: "We first evaluated the feasibility of the key cyclization.", xj: "まず鍵となる環化反応の実現可能性を評価した。", c: "noun" },
+  { e: "prerequisite", j: "前提条件", x: "Precise stereocontrol is a prerequisite for biological activity.", xj: "正確な立体制御は生物活性の前提条件である。", c: "noun" },
+  { e: "confound", j: "交絡因子；混乱させる", x: "Trace moisture is a potential confound in these measurements.", xj: "微量の水分はこれらの測定における潜在的な交絡因子である。", c: "noun" },
+  { e: "proxy", j: "代理指標", x: "UV absorbance served as a proxy for catalyst concentration.", xj: "UV吸光度を触媒濃度の代理指標とした。", c: "noun" },
+
+  // 形容詞
+  { e: "stoichiometric", j: "化学量論量の", x: "A stoichiometric amount of oxidant was required.", xj: "化学量論量の酸化剤が必要であった。", c: "adj" },
+  { e: "operative", j: "作動している・支配的な", x: "A radical chain mechanism is likely operative.", xj: "ラジカル連鎖機構が働いている可能性が高い。", c: "adj" },
+  { e: "amenable", j: "適用可能な・なじむ", x: "The substrate proved amenable to flow conditions.", xj: "この基質はフロー条件に適用可能であることがわかった。", c: "adj" },
+  { e: "modular", j: "モジュール式の・組み替え可能な", x: "The modular design allows rapid analogue synthesis.", xj: "モジュール式設計により類縁体の迅速合成が可能となる。", c: "adj" },
+
+  // 副詞
+  { e: "exclusively", j: "排他的に・もっぱら", x: "The reaction proceeds exclusively at the less hindered site.", xj: "反応は立体障害の少ない位置でのみ進行する。", c: "adv" },
+  { e: "conceivably", j: "考えられるところでは", x: "Conceivably, the additive stabilizes the Pd(0) species.", xj: "考えられるところでは、添加剤がPd(0)種を安定化している。", c: "adv" },
+  { e: "strikingly", j: "際立って・驚くべきことに", x: "Strikingly, the selectivity was reversed with the bulkier ligand.", xj: "驚くべきことに、かさ高い配位子では選択性が逆転した。", c: "adv" },
+  { e: "intriguingly", j: "興味深いことに", x: "Intriguingly, no epimerization was observed.", xj: "興味深いことに、エピマー化は観測されなかった。", c: "adv" },
+  { e: "remarkably", j: "著しく・驚くほど", x: "Remarkably, the catalyst survived 10,000 turnovers.", xj: "驚くべきことに、この触媒は10,000回のターンオーバーに耐えた。", c: "adv" },
+  { e: "unambiguously", j: "曖昧さなく・明確に", x: "The structure was unambiguously confirmed by X-ray analysis.", xj: "構造はX線解析により明確に確認された。", c: "adv" },
+  { e: "quantitatively", j: "定量的に", x: "The starting material was recovered quantitatively.", xj: "原料は定量的に回収された。", c: "adv" },
+  { e: "empirically", j: "経験的に", x: "The optimal ratio was determined empirically.", xj: "最適な比率は経験的に決定された。", c: "adv" },
+  { e: "tentatively", j: "暫定的に", x: "The signal was tentatively assigned to the hydride species.", xj: "このシグナルは暫定的にヒドリド種に帰属された。", c: "adv" },
+
+  // 接続・つなぎ
+  { e: "alongside", j: "〜と並んで・同時に", x: "Homocoupling was observed alongside the desired product.", xj: "目的生成物と並んでホモカップリング体が観測された。", c: "conn" },
+  { e: "whereby", j: "それによって〜する", x: "We propose a relay mechanism whereby the copper shuttles the aryl group.", xj: "銅がアリール基を運ぶリレー機構を提案する。", c: "conn" },
+  { e: "insofar as", j: "〜する限りにおいて", x: "The model is valid insofar as diffusion is not rate-limiting.", xj: "拡散が律速でない限りにおいて、このモデルは有効である。", c: "conn" },
+  { e: "irrespective of", j: "〜に関係なく", x: "High ee was obtained irrespective of the olefin geometry.", xj: "オレフィンの幾何配置に関係なく高いeeが得られた。", c: "conn" },
+  { e: "thus far", j: "これまでのところ", x: "Thus far, only palladium has enabled this transformation.", xj: "これまでのところ、この変換を可能にしたのはパラジウムのみである。", c: "conn" },
+
+  // 定型・発表表現
+  { e: "taken together", j: "これらを総合すると", x: "Taken together, these data support a Bi(III)/Bi(I) cycle.", xj: "これらのデータを総合すると、Bi(III)/Bi(I)サイクルが支持される。", c: "expr" },
+  { e: "it is worth noting that...", j: "〜は特筆に値します", x: "It is worth noting that no exogenous base was required.", xj: "外部塩基が不要であったことは特筆に値する。", c: "expr" },
+  { e: "of particular note", j: "特に注目すべきは", x: "Of particular note, the reaction tolerates free alcohols.", xj: "特に注目すべきは、この反応が遊離アルコールを許容する点である。", c: "expr" },
 ];
 
 const DATA_FIXES = {
