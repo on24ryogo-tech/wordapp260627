@@ -5,6 +5,7 @@ import Home from "./components/Home";
 import Flash from "./components/Flash";
 import Quiz from "./components/Quiz";
 import Browse from "./components/Browse";
+import Stats from "./components/Stats";
 
 const STORE_KEY = "acadvocab:v2";
 const LOG_KEY   = "acadvocab:studylog";
@@ -129,6 +130,7 @@ export default function App() {
           <button className={view === "home"   ? "on" : ""} onClick={() => setView("home")}>ホーム</button>
           <button className={view === "flash"  ? "on" : ""} onClick={() => setView("flash")}>カード</button>
           <button className={view === "quiz"   ? "on" : ""} onClick={() => setView("quiz")}>クイズ</button>
+          <button className={view === "stats"  ? "on" : ""} onClick={() => setView("stats")}>統計</button>
           <button className={view === "browse" ? "on" : ""} onClick={() => setView("browse")}>一覧</button>
         </nav>
       </header>
@@ -138,8 +140,24 @@ export default function App() {
         {loaded && view === "home"   && <Home stats={stats} cat={cat} setCat={setCat} go={setView} studyLog={studyLog} />}
         {loaded && view === "flash"  && <Flash deck={deck} cat={cat} setCat={setCat} progress={progress} mark={mark} />}
         {loaded && view === "quiz"   && <Quiz deck={deck} cat={cat} setCat={setCat} markQuiz={markQuiz} progress={progress} />}
+        {loaded && view === "stats"  && <Stats progress={progress} studyLog={studyLog} stats={stats} go={setView} />}
         {loaded && view === "browse" && <Browse cat={cat} setCat={setCat} progress={progress} mark={mark} />}
       </main>
+
+      <nav className="bottom-nav">
+        {[
+          ["home",   "🏠", "ホーム"],
+          ["flash",  "🃏", "カード"],
+          ["quiz",   "✏️", "クイズ"],
+          ["stats",  "📊", "統計"],
+          ["browse", "📚", "一覧"],
+        ].map(([id, icon, label]) => (
+          <button key={id} className={"bnav-btn" + (view === id ? " bnav-on" : "")} onClick={() => setView(id)}>
+            <span className="bnav-icon">{icon}</span>
+            <span className="bnav-label">{label}</span>
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { CATS, DATA } from "../data/words";
+import { playWord } from "../lib/audio";
 import CatPicker from "./CatPicker";
 import Empty from "./Empty";
 
@@ -24,9 +25,10 @@ function weightedPick(deck, progress) {
   return deck[deck.length - 1];
 }
 
-function makeQuestion(deck, pool, progress) {
+// mode: "mix"（英⇄日4択） | "listen"（音声→意味4択）
+function makeQuestion(deck, pool, progress, mode) {
   const q = weightedPick(deck, progress);
-  const askEnToJa = Math.random() < 0.5;
+  const askEnToJa = mode === "listen" ? true : Math.random() < 0.5;
   const opts = new Set([askEnToJa ? q.j : q.e]);
   let guard = 0;
   while (opts.size < 4 && guard < 200) {
@@ -42,22 +44,40 @@ function makeQuestion(deck, pool, progress) {
   return { q, askEnToJa, options: arr, answer: askEnToJa ? q.j : q.e };
 }
 
+const MODES = [
+  { id: "mix",    label: "4択" },
+  { id: "listen", label: "🎧 リスニング" },
+];
+
 export default function Quiz({ deck, cat, setCat, markQuiz, progress }) {
   const pool = DATA;
-  const [qst, setQst] = useState(null);
+  const [mode, setMode]     = useState("mix");
+  const [qst, setQst]       = useState(null);
   const [picked, setPicked] = useState(null);
-  const [score, setScore] = useState({ right: 0, total: 0 });
+  const [score, setScore]   = useState({ right: 0, total: 0 });
+  const stopRef = useRef(null);
+
+  const stopAudio = () => { if (stopRef.current) { stopRef.current(); stopRef.current = null; } };
+
+  const speak = useCallback((word) => {
+    stopAudio();
+    stopRef.current = playWord(word, { onDone: () => { stopRef.current = null; } });
+  }, []);
 
   const newQ = useCallback(() => {
     if (deck.length < 2) { setQst(null); return; }
+    stopAudio();
     setPicked(null);
-    setQst(makeQuestion(deck, pool, progress));
-  }, [deck, pool, progress]);
+    const next = makeQuestion(deck, pool, progress, mode);
+    setQst(next);
+    if (mode === "listen") speak(next.q.e);
+  }, [deck, pool, progress, mode, speak]);
 
   const newQRef = useRef(newQ);
   newQRef.current = newQ;
 
-  useEffect(() => { setScore({ right: 0, total: 0 }); newQRef.current(); }, [deck]);
+  useEffect(() => { setScore({ right: 0, total: 0 }); newQRef.current(); }, [deck, mode]);
+  useEffect(() => () => stopAudio(), []); // unmount時に音声停止
 
   if (deck.length < 4) return <Empty msg="クイズには各品詞で4語以上が必要です。「すべて」か別の品詞を選んでください。" cat={cat} setCat={setCat} />;
   if (!qst) return <Empty />;
@@ -71,11 +91,22 @@ export default function Quiz({ deck, cat, setCat, markQuiz, progress }) {
   };
 
   const meta = CATS[qst.q.c];
+  const isListen = mode === "listen";
+
   return (
     <div className="study">
       <div className="study-top">
         <CatPicker cat={cat} setCat={setCat} />
         <div className="study-meta">
+          <div className="quiz-modes">
+            {MODES.map(m => (
+              <button key={m.id}
+                className={"stab" + (mode === m.id ? " stab-on" : "")}
+                onClick={() => setMode(m.id)}>
+                {m.label}
+              </button>
+            ))}
+          </div>
           <span className="counter">スコア {score.right} / {score.total}</span>
         </div>
       </div>
@@ -83,8 +114,19 @@ export default function Quiz({ deck, cat, setCat, markQuiz, progress }) {
       <div className="quiz">
         <div className="quiz-prompt">
           <span className="card-tab" style={{ background: meta.color }}>{meta.label}</span>
-          <p className="quiz-label">{qst.askEnToJa ? "この語の意味は？" : "この意味の英語は？"}</p>
-          <div className="quiz-q">{qst.askEnToJa ? qst.q.e : qst.q.j}</div>
+          <p className="quiz-label">
+            {isListen ? "聞こえた語の意味は？" : qst.askEnToJa ? "この語の意味は？" : "この意味の英語は？"}
+          </p>
+          {isListen ? (
+            <div className="quiz-listen">
+              {picked
+                ? <div className="quiz-q">{qst.q.e}</div>
+                : <button className="listen-btn" onClick={() => speak(qst.q.e)} title="もう一度再生">🔊</button>}
+              {!picked && <p className="listen-hint">タップで再生</p>}
+            </div>
+          ) : (
+            <div className="quiz-q">{qst.askEnToJa ? qst.q.e : qst.q.j}</div>
+          )}
         </div>
 
         <div className="quiz-options">

@@ -20,7 +20,7 @@ export default function Style() {
 .app::before{ content:""; position:fixed; inset:0; background:rgba(234,238,242,0.55); pointer-events:none; z-index:0; }
 .topbar,.main{ position:relative; z-index:1; }
 
-.topbar{ display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:5; }
+.topbar{ display:flex; align-items:center; justify-content:space-between; padding:calc(14px + env(safe-area-inset-top,0px)) 20px 14px; background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:5; }
 .brand{ display:flex; align-items:center; gap:9px; cursor:pointer; }
 .flask{ font-size:22px; color:var(--cobalt); }
 .brand-name{ font-family:'Fraunces',serif; font-weight:700; font-size:19px; letter-spacing:-.01em; }
@@ -213,6 +213,68 @@ export default function Style() {
 .cal-cell.cal-today{ outline:2px solid var(--cobalt); outline-offset:1px; }
 .cal-legend{ display:flex; align-items:center; gap:3px; margin-top:8px; }
 .cal-leg-label{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); margin:0 3px; }
+
+/* ── リスニングクイズ ── */
+.quiz-modes{ display:flex; gap:5px; }
+.quiz-listen{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+.listen-btn{ width:76px; height:76px; border-radius:50%; border:2px solid var(--cobalt); background:var(--cobalt-soft); font-size:30px; cursor:pointer; transition:transform .12s ease, background .12s; }
+.listen-btn:hover{ background:#dbe6ff; transform:scale(1.05); }
+.listen-btn:active{ transform:scale(.96); }
+.listen-hint{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); }
+
+/* ── 統計ページ ── */
+.stats-page .h2{ margin-bottom:16px; }
+.stat-tiles{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin-bottom:20px; }
+.stat-tile{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+.stat-num{ font-family:'Fraunces',serif; font-weight:700; font-size:28px; color:var(--ink); font-variant-numeric:tabular-nums; line-height:1.1; }
+.stat-unit{ font-size:14px; font-weight:600; color:var(--muted); margin-left:2px; }
+.stat-label{ font-size:12px; color:var(--muted); margin-top:4px; }
+.stat-section{ margin-top:26px; }
+.stat-h3{ font-family:'Fraunces',serif; font-weight:600; font-size:17px; margin-bottom:12px; }
+.stat-sub{ font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:400; color:var(--muted); margin-left:8px; }
+
+.week-chart{ display:flex; gap:8px; align-items:flex-end; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 14px 10px; }
+.week-col{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; }
+.week-bar-wrap{ height:90px; width:100%; display:flex; align-items:flex-end; justify-content:center; }
+.week-bar{ width:60%; max-width:26px; background:#c7d8ff; border-radius:5px 5px 2px 2px; transition:height .4s ease; }
+.week-bar.week-today{ background:var(--cobalt); }
+.week-count{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--muted); min-height:14px; }
+.week-day{ font-size:11px; color:var(--muted); }
+.week-day-today{ color:var(--cobalt); font-weight:700; }
+
+.cat-progress{ display:flex; flex-direction:column; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; }
+.catp-head{ display:flex; justify-content:space-between; margin-bottom:5px; }
+.catp-label{ display:flex; align-items:center; gap:7px; font-size:13.5px; font-weight:600; }
+.catp-dot{ width:9px; height:9px; border-radius:3px; flex:none; }
+.catp-nums{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); }
+.catp-track{ display:flex; height:8px; background:var(--line); border-radius:99px; overflow:hidden; }
+.catp-known{ height:100%; transition:width .4s ease; }
+.catp-learning{ height:100%; background:rgba(180,83,9,.35); transition:width .4s ease; }
+
+.weak-list{ background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+.weak-row{ display:flex; align-items:center; gap:12px; padding:11px 16px; border-bottom:1px solid var(--line); cursor:pointer; }
+.weak-row:last-child{ border-bottom:none; }
+.weak-row:hover{ background:var(--cobalt-soft); }
+.weak-word{ font-weight:600; font-size:14.5px; flex:none; }
+.weak-ja{ font-size:13px; color:var(--muted); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.weak-score{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--rose); flex:none; }
+
+/* ── ボトムナビ（モバイル） ── */
+.bottom-nav{ display:none; }
+@media (max-width:640px){
+  .topbar .nav{ display:none; }
+  .bottom-nav{
+    display:flex; position:fixed; left:0; right:0; bottom:0; z-index:10;
+    background:rgba(255,255,255,.92); backdrop-filter:blur(10px);
+    border-top:1px solid var(--line);
+    padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));
+  }
+  .main{ padding-bottom:110px; }
+}
+.bnav-btn{ flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; background:none; border:none; padding:5px 2px; border-radius:10px; cursor:pointer; color:var(--muted); }
+.bnav-icon{ font-size:19px; line-height:1; }
+.bnav-label{ font-size:10px; font-weight:600; }
+.bnav-on{ color:var(--cobalt); background:var(--cobalt-soft); }
 
 @media (max-width:560px){
   .study-controls{ grid-template-columns:repeat(2,1fr); }
