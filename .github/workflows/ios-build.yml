@@ -23,6 +23,10 @@ jobs:
           cache: npm
           cache-dependency-path: lexicon-lab/package-lock.json
 
+      # ローカルと同じ npm v11 に揃える（v10 とは peer 依存の解決が異なり npm ci が失敗する）
+      - name: Use npm 11
+        run: npm install -g npm@11
+
       - name: Install dependencies
         run: npm ci
 
