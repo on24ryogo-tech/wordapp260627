@@ -1,0 +1,11 @@
+{
+  "appId": "com.manabiph.lexiconlab",
+  "appName": "Lexicon.Lab",
+  "webDir": "build",
+  "ios": {
+    "contentInset": "automatic"
+  },
+  "server": {
+    "iosScheme": "https"
+  }
+}

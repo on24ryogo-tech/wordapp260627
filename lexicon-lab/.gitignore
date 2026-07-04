@@ -23,3 +23,10 @@ yarn-debug.log*
 yarn-error.log*
 
 .vercel
+
+# Capacitor iOS（生成物のみ除外、プロジェクト本体はコミット）
+/ios/App/Pods
+/ios/App/App/public
+/ios/App/output
+/ios/DerivedData
+/ios/capacitor-cordova-ios-plugins
