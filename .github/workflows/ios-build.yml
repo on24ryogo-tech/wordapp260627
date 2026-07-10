@@ -86,8 +86,10 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
-          bundler-cache: true
-          working-directory: lexicon-lab/ios/App
+
+      - name: Install fastlane
+        working-directory: lexicon-lab/ios/App
+        run: bundle install
 
       - name: Build and upload to TestFlight
         working-directory: lexicon-lab/ios/App
