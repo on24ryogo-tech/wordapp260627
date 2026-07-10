@@ -54,3 +54,47 @@ jobs:
           name: LexiconLab-unsigned
           path: ~/Library/Developer/Xcode/DerivedData/**/Build/Products/Release-iphoneos/App.app
           if-no-files-found: warn
+
+  # 手動トリガーで TestFlight へ配信（Secrets 設定後に有効）
+  testflight:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: lexicon-lab
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: lexicon-lab/package-lock.json
+
+      - name: Use npm 11
+        run: npm install -g npm@11
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Sync Capacitor iOS
+        run: npx cap sync ios
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: lexicon-lab/ios/App
+
+      - name: Build and upload to TestFlight
+        working-directory: lexicon-lab/ios/App
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTH }}
+        run: bundle exec fastlane beta
